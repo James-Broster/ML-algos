@@ -1,0 +1,349 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/James-Broster/ML-algos/blob/main/NLP%20(SMS%20spam%20vs%20ham)\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "8RZOuS9LWQvv"
+      },
+      "outputs": [],
+      "source": [
+        "# import libraries\n",
+        "# try:\n",
+        "#   # %tensorflow_version only exists in Colab.\n",
+        "#   !pip install tf-nightly\n",
+        "# except Exception:\n",
+        "#   pass\n",
+        "import tensorflow as tf\n",
+        "import pandas as pd\n",
+        "from tensorflow import keras\n",
+        "from keras import layers\n",
+        "from keras.preprocessing.text import Tokenizer, one_hot\n",
+        "from keras.models import Sequential\n",
+        "from keras.layers import Dense, SimpleRNN, Flatten, Dropout, Embedding, LSTM, TextVectorization, BatchNormalization, Bidirectional\n",
+        "from keras.callbacks import EarlyStopping\n",
+        "!pip install tensorflow-datasets\n",
+        "import tensorflow_datasets as tfds\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "from random import choices\n",
+        "print(tf.__version__)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "lMHwYXHXCar3"
+      },
+      "outputs": [],
+      "source": [
+        "# get data files\n",
+        "!wget https://cdn.freecodecamp.org/project-data/sms/train-data.tsv\n",
+        "!wget https://cdn.freecodecamp.org/project-data/sms/valid-data.tsv\n",
+        "\n",
+        "train_file_path = \"train-data.tsv\"\n",
+        "test_file_path = \"valid-data.tsv\""
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "g_h508FEClxO"
+      },
+      "outputs": [],
+      "source": [
+        "df_train = pd.read_csv(train_file_path, sep='\\t', names=['label','text'])\n",
+        "\n",
+        "df_test = pd.read_csv(test_file_path, sep='\\t', names=['label','text'])\n",
+        "df_train"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "zOMKywn4zReN"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "Pbd1sq2pySdX"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "cYKi5OC0zD_J"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n"
+      ],
+      "metadata": {
+        "id": "7VTvZtJBtjo9"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import tensorflow as tf\n",
+        "from tensorflow.keras.preprocessing.text import Tokenizer\n",
+        "from tensorflow.keras.preprocessing.sequence import pad_sequences\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "\n",
+        "# Drop NA values and duplicates\n",
+        "df_train.dropna(inplace=True)\n",
+        "df_train.drop_duplicates(inplace=True)\n",
+        "df_test.dropna(inplace=True)\n",
+        "df_test.drop_duplicates(inplace=True)\n",
+        "\n",
+        "# Convert labels to numerical values\n",
+        "label_map = {'ham': 0, 'spam': 1}\n",
+        "df_train['label'] = df_train['label'].map(label_map)\n",
+        "df_test['label'] = df_test['label'].map(label_map)\n",
+        "\n",
+        "\n",
+        "train_texts = df_train['text'].tolist()\n",
+        "train_labels = df_train['label'].tolist()\n",
+        "test_texts = df_test['text'].tolist()\n",
+        "test_labels = df_test['label'].tolist()\n",
+        "train_texts"
+      ],
+      "metadata": {
+        "id": "5i2BbXTp08Nl"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "tokenizer = Tokenizer()\n",
+        "tokenizer.fit_on_texts(train_texts)\n",
+        "\n",
+        "# Convert text to sequences of integers\n",
+        "train_sequences = tokenizer.texts_to_sequences(train_texts)\n",
+        "test_sequences = tokenizer.texts_to_sequences(test_texts)\n",
+        "\n",
+        "# Get the vocabulary size\n",
+        "vocab_size = len(tokenizer.word_index) + 1\n",
+        "\n",
+        "train_sequences"
+      ],
+      "metadata": {
+        "id": "fF-Q9b2s6Igc"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "max_length = max(len(seq) for seq in train_sequences + test_sequences)\n",
+        "train_data = pad_sequences(train_sequences, maxlen=max_length, padding='post')\n",
+        "test_data = pad_sequences(test_sequences, maxlen=max_length, padding='post')"
+      ],
+      "metadata": {
+        "id": "qMgkURli8jkC"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "train_dataset = tf.data.Dataset.from_tensor_slices((train_data, train_labels)).shuffle(buffer_size=1000).batch(32)\n",
+        "test_dataset = tf.data.Dataset.from_tensor_slices((test_data, test_labels)).batch(32)"
+      ],
+      "metadata": {
+        "id": "I0rACRXv7spj"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import tensorflow as tf\n",
+        "from tensorflow.keras import layers, models\n",
+        "\n",
+        "# Create the neural network model\n",
+        "model = tf.keras.models.Sequential([\n",
+        "    tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=64, input_length=max_length),\n",
+        "    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64, return_sequences=True)),\n",
+        "    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32)),\n",
+        "    tf.keras.layers.Dense(32, activation='relu'),\n",
+        "    tf.keras.layers.Dense(1, activation='sigmoid')\n",
+        "])\n",
+        "\n",
+        "\n",
+        "# Compile the model\n",
+        "model.compile(optimizer='adam',\n",
+        "              loss='binary_crossentropy',\n",
+        "              metrics=['accuracy'])\n"
+      ],
+      "metadata": {
+        "id": "Fj_E3B662ZKb"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n"
+      ],
+      "metadata": {
+        "id": "iWet1OvaJzt9"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.fit(train_dataset, epochs=10, validation_data=test_dataset)"
+      ],
+      "metadata": {
+        "id": "cu03zgto3G30"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "Jz2m-5pBnVxS"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.evaluate(test_dataset)"
+      ],
+      "metadata": {
+        "id": "j3IPOHB46TC5"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "DSqWAGB37yoK"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "J9tD9yACG6M9"
+      },
+      "outputs": [],
+      "source": [
+        "# function to predict messages based on model\n",
+        "# (should return list containing prediction and label, ex. [0.008318834938108921, 'ham'])\n",
+        "def predict_message(pred_text):\n",
+        "    # Tokenize and pad the input message\n",
+        "    pred_seq = tokenizer.texts_to_sequences([pred_text])\n",
+        "    pred_seq = pad_sequences(pred_seq, maxlen=max_length, padding='post')\n",
+        "\n",
+        "    # Make the prediction using the trained model\n",
+        "    prediction = model.predict(pred_seq)[0][0]\n",
+        "\n",
+        "    # Convert the prediction to 'ham' or 'spam'\n",
+        "    predicted_class = 'ham' if prediction < 0.5 else 'spam'\n",
+        "\n",
+        "    return [prediction, predicted_class]\n",
+        "\n",
+        "# Example usage of the predict_message function\n",
+        "pred_text = \"how are you doing today?\"\n",
+        "prediction = predict_message(pred_text)\n",
+        "print(prediction)  # Output: [0.008318834938108921, 'ham']"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "Dxotov85SjsC"
+      },
+      "outputs": [],
+      "source": [
+        "# Run this cell to test your function and model. Do not modify contents.\n",
+        "def test_predictions():\n",
+        "  test_messages = [\"how are you doing today\",\n",
+        "                   \"sale today! to stop texts call 98912460324\",\n",
+        "                   \"i dont want to go. can we try it a different day? available sat\",\n",
+        "                   \"our new mobile video service is live. just install on your phone to start watching.\",\n",
+        "                   \"you have won £1000 cash! call to claim your prize.\",\n",
+        "                   \"i'll bring it tomorrow. don't forget the milk.\",\n",
+        "                   \"wow, is your arm alright. that happened to me one time too\"\n",
+        "                  ]\n",
+        "\n",
+        "  test_answers = [\"ham\", \"spam\", \"ham\", \"spam\", \"spam\", \"ham\", \"ham\"]\n",
+        "  passed = True\n",
+        "\n",
+        "  for msg, ans in zip(test_messages, test_answers):\n",
+        "    prediction = predict_message(msg)\n",
+        "    if prediction[1] != ans:\n",
+        "      passed = False\n",
+        "\n",
+        "  if passed:\n",
+        "    print(\"You passed the challenge. Great job!\")\n",
+        "  else:\n",
+        "    print(\"You haven't passed yet. Keep trying.\")\n",
+        "\n",
+        "test_predictions()\n"
+      ]
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "private_outputs": true,
+      "provenance": [],
+      "gpuType": "T4",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {},
+    "accelerator": "GPU"
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
